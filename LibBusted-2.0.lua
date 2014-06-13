@@ -8,7 +8,7 @@ end
 -- Set a reference to the actual package or create an empty table
 local busted = APkg and APkg.tPackage or {}
 
-local BustedTests   = setmetable({}, { __index = function(tbl, key) tbl[key] = {} return tbl[key] end })
+local BustedTests   = setmetatable({}, { __index = function(tbl, key) tbl[key] = {} return tbl[key] end })
 
 -------------------------------------------------------------------------------
 --- Olivine-Labs util
@@ -217,6 +217,12 @@ do
       error("'called_with' must be chained after 'spy(aspy)'")
     end
   end
+
+  function spy.init()
+    assert:register("modifier", "spy", set_spy)
+    assert:register("assertion", "called_with", called_with, "assertion.called_with.positive", "assertion.called_with.negative")
+    assert:register("assertion", "called", called, "assertion.called.positive", "assertion.called.negative")
+  end
 end
 
 -------------------------------------------------------------------------------
@@ -266,6 +272,10 @@ do
         -- NOTE: this deviates from spy, which has no __call method
         return stub.new(...)
       end })
+
+  function stub.init()
+    assert:register("modifier", "stub", set_stub)
+  end
 end
 
 -------------------------------------------------------------------------------
@@ -298,7 +308,7 @@ end
 --- Olivine-Labs Mediator
 -------------------------------------------------------------------------------
 
-local mediator
+local mediatorProto
 do
   local function Subscriber(fn, options)
     return {
@@ -415,7 +425,7 @@ do
 
   -- Mediator class and functions --
 
-  mediator = setmetatable(
+  mediatorProto = setmetatable(
   {
     Channel = Channel,
     Subscriber = Subscriber
@@ -558,11 +568,16 @@ end
 -------------------------------------------------------------------------------
 
 do
+  local mediator = mediatorProto()
   busted.version = '2.0-1'
 
   busted.context = context.ref()
 
   local environment = bustedEnvironment(busted.context)
+  environment.set('mock', mock)
+  environment.set('spy', spy)
+  environment.set('stub', stub)
+  environment.set('s', s)
 
   busted.executors = {}
   local executors = {}
@@ -687,11 +702,12 @@ end
 --- Olivine-Labs Busted-Done
 -------------------------------------------------------------------------------
 
-local bustedDone = {}
-
+local BustedDone
 do
+  local M = {}
+
   -- adds tokens to the current wait list, does not change order/unordered
-  BustedDone.wait = function(self, ...)
+  M.wait = function(self, ...)
     local tlist = { ... }
 
     for _, token in ipairs(tlist) do
@@ -703,19 +719,19 @@ do
   end
 
   -- set list as unordered, adds tokens to current wait list
-  BustedDone.wait_unordered = function(self, ...)
+  M.wait_unordered = function(self, ...)
     self.ordered = false
     self:wait(...)
   end
 
   -- set list as ordered, adds tokens to current wait list
-  BustedDone.wait_ordered = function(self, ...)
+  M.wait_ordered = function(self, ...)
     self.ordered = true
     self:wait(...)
   end
 
   -- generates a message listing tokens received/open
-  BustedDone.tokenlist = function(self)
+  M.tokenlist = function(self)
     local list
 
     if #self.tokens_done == 0 then
@@ -750,8 +766,8 @@ do
   end
 
   -- marks a token as completed, checks for ordered/unordered, checks for completeness
-  BustedDone.done = function(self, ...) self:_done(...) end -- extra wrapper for same error level constant as __call method
-  BustedDone._done = function(self, token)
+  M.done = function(self, ...) self:_done(...) end  -- extra wrapper for same error level constant as __call method
+  M._done = function(self, token)
     if token then
       if type(token) ~= "string" then
         error("Wait tokens must be strings. Got "..type(token), 3)
@@ -792,28 +808,30 @@ do
 
 
   -- wraps a done callback into a done-object supporting tokens to sign-off
-  BustedDone.new = function(done_callback)
+  M.new = function(done_callback)
     local obj = {
       tokens = {},
       tokens_done = {},
       done_cb = done_callback,
-      ordered = true, -- default for sign off of tokens
+      ordered = true,  -- default for sign off of tokens
     }
 
     return setmetatable( obj, {
       __call = function(self, ...)
         self:_done(...)
       end,
-      __index = BustedDone,
+      __index = M,
     })
   end
+
+  BustedDone = M
 end
 
 -------------------------------------------------------------------------------
 --- Olivine-Labs Busted-Init
 -------------------------------------------------------------------------------
 
-math.randomseed(os.time())
+--math.randomseed(os.time())
 local bustedInit
 do
   local function shuffle(t)
@@ -1168,8 +1186,8 @@ local utils = {
   setfenv = setfenv,
   getfenv = getfenv,
   load = loadstring,
-  execute = unction() error("No os.execute Available!") end,
-  dir_separator = _G.package.config:sub(1,1),
+  execute = function() error("No os.execute Available!") end,
+  dir_separator = _G.package.config:sub(1,1), 
   unpack = unpack,
 }
 do
@@ -1193,7 +1211,7 @@ do
           utils.fprintf(io.stderr,code,...)
           code = -1
       else
-          error("Quit unsupported: " string.format(...))
+          error("Quit unsupported: " .. string.format(...))
       end
   end
 
@@ -1507,8 +1525,7 @@ do
       local t = type(obj)
       if t == 'table' or t == 'userdata' then
           local mt = getmetatable(obj)
-            return mt._name or "unknown "..t
-          end
+          return mt._name or "unknown "..t
       else
           return t
       end
@@ -2517,7 +2534,11 @@ end
 
 local s
 do
-  local LibSay = {
+  local registry = { }
+  local current_namespace
+  local fallback_namespace
+
+  s = {
 
     _COPYRIGHT   = "Copyright (c) 2012 Olivine Labs, LLC.",
     _DESCRIPTION = "A simple string key/value store for i18n or any other case where you want namespaced strings.",
@@ -2566,14 +2587,14 @@ do
     end
   }
 
-  LibSay:set_fallback('en')
-  LibSay:set_namespace('en')
+  s:set_fallback('en')
+  s:set_namespace('en')
 
   if _TEST then
-    LibSay._registry = registry -- force different name to make sure with _TEST behaves exactly as without _TEST
+    s._registry = registry -- force different name to make sure with _TEST behaves exactly as without _TEST
   end
 
-  s = setmetatable(LibSay, __meta)
+  setmetatable(s, __meta)
 end
 
 -------------------------------------------------------------------------------
@@ -2910,14 +2931,12 @@ local function outputSound(options, busted)
   handler.suiteEnd = function(name, parent)
     local messages, soundNum
 
-    math.randomseed(os.time())
-
     if isFailure then
       messages = busted.failure_messages
-      soundNum = 1 -- TODO: Find good failure sound
+      soundNum = Sound.PlayUIChallengeQuestFailed
     else
       messages = busted.success_messages
-      soundNum = 2 -- TODO: Find good success sound
+      soundNum = Sound.PlayUIChallengeQuestComplete
     end
 
     Sound.Play(soundNum)
@@ -2939,8 +2958,9 @@ end
 --- Olivine-Labs Busted - XML Test File
 -------------------------------------------------------------------------------
 
-local XMLTests = {}
+local XMLTests
 do
+  local ret = {}
   local getTrace =  function(filename, info)
     local index = info.traceback:find('\n%s*%[C]')
     info.traceback = info.traceback:sub(1, index)
@@ -2948,10 +2968,10 @@ do
   end
 
   ret.load = function(busted, self, filename)
-    local testfunc
+    local testfunc, teststring
 
     local XMLTable = XmlDoc.CreateFromFile(filename):ToTable()
-    if not XMLTable or XMLTable.__XmlNode ~= "Defintion" or
+    if not XMLTable or XMLTable.__XmlNode ~= "Definition" or
        not XMLTable[1] or not XMLTable[1].__XmlText then
       return
     end
@@ -3012,14 +3032,18 @@ local function ExecuteTests()
 end
 
 local function RunTest(self, strTest)
-  if not BustedTests[self][strTest]) then return end
-  local testFile, getTrace = XMLTests.load(busted, self, strTest)
+  if not BustedTests[self][strTest] then return end
+  if type(BustedTests[self][strTest]) ~= "table" then 
+    local testFile, getTrace = XMLTests.load(busted, self, BustedTests[self][strTest])
+    BustedTests[self][strTest] = {file = testFile, trace = getTrace}
+  end
+  local test = BustedTests[self][strTest]
 
-  if testFile then
+  if test.file then
     local file = setmetatable({
-      getTrace = getTrace
+      getTrace = test.trace
     }, {
-      __call = testFile
+      __call = test.file
     })
     busted.executors.file(strTest, file)
   end
@@ -3028,7 +3052,7 @@ end
 
 local function RunTests(self, config)
   for k,v in pairs(BustedTests[self]) do
-    local testFile, getTrace = XMLTests(busted, k)
+    local testFile, getTrace = XMLTests(busted, v)
 
     if testFile then
       local file = setmetatable({
@@ -3107,8 +3131,9 @@ function busted:OnLoad()
       'Strange game. The only way to win is not to test',
       'My grandmother wrote better specs on a 3 86',
       'Every time there\'s a failure, drink another beer',
-      'Feels bad man'
-    },
+      'Feels bad man',
+    }
+
     self.success_messages = {
       'Aww yeah, passing specs',
       'Doesn\'t matter, had specs',
@@ -3148,7 +3173,7 @@ function busted:OnLoad()
       'Meine Großmutter hat auf einem 386er bessere Tests geschrieben.',
       'Immer wenn ein Test fehlschlägt, stirbt ein kleines Kätzchen.',
       'Das fühlt sich schlecht an, oder?'
-    },
+    }
     self.success_messages = {
       'Yeah, die Tests laufen durch.',
       'Fühlt sich gut an, oder?',
@@ -3187,7 +3212,7 @@ function busted:OnLoad()
       'Meme ma grand-mere ecrivait de meilleurs tests sur un PIII x86',
       'A chaque erreur, prenez une biere',
       'Ca craint, mon pote'
-    },
+    }
     success_messages = {
       'Oh yeah, tests reussis',
       'Pas grave, y\'a eu du succes',
@@ -3197,12 +3222,8 @@ function busted:OnLoad()
     }
   end
 
-  -- Spy Asserts - Delayed til OnLoad to be sure LibAssert is present
-  assert:register("modifier", "spy", set_spy)
-  assert:register("assertion", "called_with", called_with, "assertion.called_with.positive", "assertion.called_with.negative")
-  assert:register("assertion", "called", called, "assertion.called.positive", "assertion.called.negative")
-  -- Stub Assert - Delayed til OnLoad to be sure LibAssert is present
-  assert:register("modifier", "stub", set_stub)
+  spy.init()
+  stub.init()
 
   bustedInit(busted)
 
