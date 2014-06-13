@@ -11,6 +11,87 @@ local busted = APkg and APkg.tPackage or {}
 local BustedTests   = setmetatable({}, { __index = function(tbl, key) tbl[key] = {} return tbl[key] end })
 
 -------------------------------------------------------------------------------
+--- Olivine-Labs Say
+-------------------------------------------------------------------------------
+
+local SAY_MAJOR, SAY_MINOR = "Olivine:Say-1.0", 1
+-- Get a reference to the package information if any
+local APkg = Apollo.GetPackage(SAY_MAJOR)
+-- Set a reference to the actual package or create an empty table
+local s = APkg and APkg.tPackage or {}
+-- If there was an older version loaded we need to see if this is newer
+if not APkg or (APkg.nVersion or 0) < SAY_MINOR then
+  do
+    local registry = s.get_registry and s.get_registry() or { }
+    local current_namespace
+    local fallback_namespace
+
+    s = {
+
+      _COPYRIGHT   = "Copyright (c) 2012 Olivine Labs, LLC.",
+      _DESCRIPTION = "A simple string key/value store for i18n or any other case where you want namespaced strings.",
+      _VERSION     = "Say 1.2",
+
+      set_namespace = function(self, namespace)
+        current_namespace = namespace
+        if not registry[current_namespace] then
+          registry[current_namespace] = {}
+        end
+      end,
+
+      set_fallback = function(self, namespace)
+        fallback_namespace = namespace
+        if not registry[fallback_namespace] then
+          registry[fallback_namespace] = {}
+        end
+      end,
+
+      set = function(self, key, value)
+        registry[current_namespace][key] = value
+      end,
+
+      get_registry = function()
+        return registry
+      end,
+    }
+
+    local __meta = {
+      __call = function(self, key, vars)
+        vars = vars or {}
+
+        local str = registry[current_namespace][key] or registry[fallback_namespace][key]
+
+        if str == nil then
+          return nil
+        end
+        str = tostring(str)
+        local strings = {}
+
+        for i,v in ipairs(vars) do
+          table.insert(strings, tostring(v))
+        end
+
+        return #strings > 0 and str:format(unpack(strings)) or str
+      end,
+
+      __index = function(self, key)
+        return registry[key]
+      end
+    }
+
+    s:set_fallback('en')
+    s:set_namespace('en')
+
+    if _TEST then
+      s._registry = registry -- force different name to make sure with _TEST behaves exactly as without _TEST
+    end
+
+    setmetatable(s, __meta)
+  end
+  Apollo.RegisterPackage(s, SAY_MAJOR, SAY_MINOR, {})
+end
+
+-------------------------------------------------------------------------------
 --- Olivine-Labs util
 -------------------------------------------------------------------------------
 
@@ -519,7 +600,7 @@ end
 --- Olivine-Labs Busted-Environment
 -------------------------------------------------------------------------------
 
-local function bustedEnvironment(context)
+local function buildEnvironment(context)
   local environment = {}
 
   local function getEnv(self, key)
@@ -573,11 +654,15 @@ do
 
   busted.context = context.ref()
 
-  local environment = bustedEnvironment(busted.context)
+  local environment = buildEnvironment(busted.context)
   environment.set('mock', mock)
   environment.set('spy', spy)
   environment.set('stub', stub)
   environment.set('s', s)
+
+  busted.getEnvironment = function()
+    return environment
+  end
 
   busted.executors = {}
   local executors = {}
@@ -2529,75 +2614,6 @@ do
 end
 
 -------------------------------------------------------------------------------
---- Olivine-Labs Say
--------------------------------------------------------------------------------
-
-local s
-do
-  local registry = { }
-  local current_namespace
-  local fallback_namespace
-
-  s = {
-
-    _COPYRIGHT   = "Copyright (c) 2012 Olivine Labs, LLC.",
-    _DESCRIPTION = "A simple string key/value store for i18n or any other case where you want namespaced strings.",
-    _VERSION     = "Say 1.2",
-
-    set_namespace = function(self, namespace)
-      current_namespace = namespace
-      if not registry[current_namespace] then
-        registry[current_namespace] = {}
-      end
-    end,
-
-    set_fallback = function(self, namespace)
-      fallback_namespace = namespace
-      if not registry[fallback_namespace] then
-        registry[fallback_namespace] = {}
-      end
-    end,
-
-    set = function(self, key, value)
-      registry[current_namespace][key] = value
-    end
-  }
-
-  local __meta = {
-    __call = function(self, key, vars)
-      vars = vars or {}
-
-      local str = registry[current_namespace][key] or registry[fallback_namespace][key]
-
-      if str == nil then
-        return nil
-      end
-      str = tostring(str)
-      local strings = {}
-
-      for i,v in ipairs(vars) do
-        table.insert(strings, tostring(v))
-      end
-
-      return #strings > 0 and str:format(unpack(strings)) or str
-    end,
-
-    __index = function(self, key)
-      return registry[key]
-    end
-  }
-
-  s:set_fallback('en')
-  s:set_namespace('en')
-
-  if _TEST then
-    s._registry = registry -- force different name to make sure with _TEST behaves exactly as without _TEST
-  end
-
-  setmetatable(s, __meta)
-end
-
--------------------------------------------------------------------------------
 --- Penlight (https://github.com/stevedonovan/Penlight/) 
 ---       Pretty (Write Only + keywords from lexer)
 -------------------------------------------------------------------------------
@@ -2967,7 +2983,7 @@ do
     return info, false
   end
 
-  ret.load = function(busted, self, filename)
+  ret.load = function(busted, filename)
     local testfunc, teststring
 
     local XMLTable = XmlDoc.CreateFromFile(filename):ToTable()
@@ -3033,28 +3049,27 @@ end
 
 local function RunTest(self, strTest)
   if not BustedTests[self][strTest] then return end
-  if type(BustedTests[self][strTest]) ~= "table" then 
-    local testFile, getTrace = XMLTests.load(busted, self, BustedTests[self][strTest])
-    BustedTests[self][strTest] = {file = testFile, trace = getTrace}
-  end
-  local test = BustedTests[self][strTest]
+  local testFile, getTrace = XMLTests.load(busted, BustedTests[self][strTest])
 
-  if test.file then
+  if testFile then
     local file = setmetatable({
-      getTrace = test.trace
+      getTrace = getTrace
     }, {
-      __call = test.file
+      __call = testFile
     })
+    busted.getEnvironment().set('self', self)
     busted.executors.file(strTest, file)
+    ExecuteTests()
   end
-  ExecuteTests()
 end
 
 local function RunTests(self, config)
+  local bLoadedTests
   for k,v in pairs(BustedTests[self]) do
-    local testFile, getTrace = XMLTests(busted, v)
+    local testFile, getTrace = XMLTests.load(busted, v)
 
     if testFile then
+      bLoadedTests = true
       local file = setmetatable({
         getTrace = getTrace
       }, {
@@ -3063,7 +3078,10 @@ local function RunTests(self, config)
       busted.executors.file(k, file)
     end
   end
-  ExecuteTests()
+  if bLoadedTests then
+    busted.getEnvironment().set('self', self)
+    ExecuteTests()
+  end
 end
 
 local function IterateTests(self)
@@ -3077,7 +3095,7 @@ local tMixins = {
 }
 
 function busted:Register(oAddon)
-  local bFoundTests = false
+  local bFoundTests
   local strAssetFolder = Apollo.GetAssetFolder()
   local tocXML = XmlDoc.CreateFromFile("toc.xml"):ToTable()
   for k,v in pairs(tocXML) do
