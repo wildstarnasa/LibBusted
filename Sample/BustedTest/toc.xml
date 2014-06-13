@@ -5,9 +5,14 @@
     <Script Name="BustedTest.lua"/>
     <Form Name="BustedTest.xml"/>
     <Test Name="Asserts" File="tests\Asserts.xml"/>
+    <Test Name="Core" File="tests\Core.xml"/>
     <Test Name="Define" File="tests\Define.xml"/>
+    <Test Name="Execution" File="tests\Execution.xml"/>
+    <Test Name="Failing Supports" File="tests\FailingSupport.xml"/>
     <Test Name="Finally" File="tests\Finally.xml"/>
     <Test Name="Mocks" File="tests\Mocks.xml"/>
     <Test Name="Spies" File="tests\Spies.xml"/>
     <Test Name="Stubs" File="tests\Stubs.xml"/>
+    <Test Name="One Success" File="tests\Success.xml"/>
+    <Test Name="Two Fails" File="tests\TwoFails.xml"/>
 </Addon>
