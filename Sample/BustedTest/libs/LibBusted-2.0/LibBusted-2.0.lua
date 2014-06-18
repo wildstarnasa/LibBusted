@@ -220,10 +220,10 @@ do
       {
         calls = {},
         callback = callback,
-        
+
         target_table = nil, -- these will be set when using 'spy.on'
         target_key = nil,
-        
+
         revert = function(self)
           if not self.reverted then
             if self.target_table and self.target_key then
@@ -233,7 +233,7 @@ do
           end
           return self.callback
         end,
-        
+
         called = function(self, times)
           if times then
             return (#self.calls == times), #self.calls
@@ -258,14 +258,14 @@ do
     is_spy = function(object)
       return type(object) == "table" and getmetatable(object) == spy_mt
     end,
-      
+
     on = function(target_table, target_key)
       local s = spy.new(target_table[target_key])
       target_table[target_key] = s
-      -- store original data 
+      -- store original data
       s.target_table = target_table
       s.target_key = target_key
-      
+
       return s
     end
   }
@@ -326,7 +326,7 @@ do
     object[key] = stubfunc          -- set the stubfunction
     local s = spy.on(object, key)   -- create a spy on top of the stub function
     local spy_revert = s.revert     -- keep created revert function
-    
+
     s.revert = function(self)       -- wrap revert function to restore original element
       if not self.reverted then
         spy_revert(self)
@@ -335,7 +335,7 @@ do
       end
       return old_elem
     end
-    
+
     return s
   end
 
@@ -363,19 +363,19 @@ end
 --- Olivine-Labs mock
 -------------------------------------------------------------------------------
 
-local function mock(object, dostub, func, self, key)
+local function mock(object, dostub, self, key)
   local data_type = type(object)
   if data_type == "table" then
     if spy.is_spy(object) then
       -- this table is a function already wrapped as a spy, so nothing to do here
     else
       for k,v in pairs(object) do
-        object[k] = mock(v, dostub, func, object, k)
+        object[k] = mock(v, dostub, object, k)
       end
     end
   elseif data_type == "function" then
     if dostub then
-      return stub(self, key, func)
+      return stub(self, key)
     elseif self==nil then
       return spy.new(object)
     else
@@ -383,6 +383,19 @@ local function mock(object, dostub, func, self, key)
     end
   end
   return object
+end
+
+local function unmock(object)
+	local data_type = type(object)
+	if data_type == "table" then
+		if spy.is_spy(object) then
+			object:revert()
+		else
+			for k,v in pairs(object) do
+				unmock(v)
+			end
+		end
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -551,7 +564,7 @@ end
 -------------------------------------------------------------------------------
 
 local context = {}
-do 
+do
   local data = {}
   local parents = {}
   local children = {}
@@ -1273,7 +1286,7 @@ local utils = {
   getfenv = getfenv,
   load = loadstring,
   execute = function() error("No os.execute Available!") end,
-  dir_separator = _G.package.config:sub(1,1), 
+  dir_separator = _G.package.config:sub(1,1),
   unpack = unpack,
 }
 do
@@ -2615,7 +2628,7 @@ do
 end
 
 -------------------------------------------------------------------------------
---- Penlight (https://github.com/stevedonovan/Penlight/) 
+--- Penlight (https://github.com/stevedonovan/Penlight/)
 ---       Pretty (Write Only + keywords from lexer)
 -------------------------------------------------------------------------------
 
@@ -3012,6 +3025,39 @@ do
 end
 
 -------------------------------------------------------------------------------
+--- Olivine-Labs Busted - Lua Test File
+-------------------------------------------------------------------------------
+
+local LuaTests
+do
+	local ret = {}
+	local getTrace =  function(filename, info)
+		local index = info.traceback:find('\n%s*%[C]')
+		info.traceback = info.traceback:sub(1, index)
+		return info, false
+	end
+
+	ret.load = function(busted, filename)
+		local file
+
+		local success, err = pcall(function()
+			file, err = loadfile(filename)
+
+			if not testfunc then
+				busted.publish({ 'error', 'file' }, filename, nil, nil, err)
+			end
+		end)
+
+		if not success then
+			busted.publish({ 'error', 'file' }, filename, nil, nil, err)
+		end
+
+		return file, getTrace
+	end
+	LuaTests = ret
+end
+
+-------------------------------------------------------------------------------
 --- Olivine-Labs Busted - v2
 -------------------------------------------------------------------------------
 
@@ -3048,9 +3094,16 @@ local function ExecuteTests()
   busted.publish({ 'suite', 'end' })
 end
 
+local loaders = {
+	["lua"] = LuaTests,
+	["xml"] = XMLTests,
+}
+
 local function RunTest(self, strTest)
   if not BustedTests[self][strTest] then return end
-  local testFile, getTrace = XMLTests.load(busted, BustedTests[self][strTest])
+	local loader = loaders[string.sub(strTest,-3)]
+	if not loader then return end
+  local testFile, getTrace = loader.load(busted, BustedTests[self][strTest])
 
   if testFile then
     local file = setmetatable({
