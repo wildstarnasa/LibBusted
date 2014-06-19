@@ -3039,11 +3039,10 @@ do
 
 	ret.load = function(busted, filename)
 		local file
-
 		local success, err = pcall(function()
 			file, err = loadfile(filename)
 
-			if not testfunc then
+			if not file then
 				busted.publish({ 'error', 'file' }, filename, nil, nil, err)
 			end
 		end)
@@ -3100,10 +3099,11 @@ local loaders = {
 }
 
 local function RunTest(self, strTest)
-  if not BustedTests[self][strTest] then return end
-	local loader = loaders[string.sub(strTest,-3)]
+  local strFile = BustedTests[self][strTest]
+  if not strFile then return end
+	local loader = loaders[string.sub(strFile,-3)]
 	if not loader then return end
-  local testFile, getTrace = loader.load(busted, BustedTests[self][strTest])
+  local testFile, getTrace = loader.load(busted, strFile)
 
   if testFile then
     local file = setmetatable({
@@ -3120,16 +3120,19 @@ end
 local function RunTests(self, config)
   local bLoadedTests
   for k,v in pairs(BustedTests[self]) do
-    local testFile, getTrace = XMLTests.load(busted, v)
+    local loader = loaders[string.sub(v, -3)]
+    if loader then
+      local testFile, getTrace = loader.load(busted, v)
 
-    if testFile then
-      bLoadedTests = true
-      local file = setmetatable({
-        getTrace = getTrace
-      }, {
-        __call = testFile
-      })
-      busted.executors.file(k, file)
+      if testFile then
+        bLoadedTests = true
+        local file = setmetatable({
+          getTrace = getTrace
+        }, {
+          __call = testFile
+        })
+        busted.executors.file(k, file)
+      end
     end
   end
   if bLoadedTests then
