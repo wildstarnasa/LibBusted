@@ -15,7 +15,7 @@ require "PathMission"
 -----------------------------------------------------------------------------------------------
 -- BustedTest Module Definition
 -----------------------------------------------------------------------------------------------
-local BustedTest = {} 
+local BustedTest = {}
 
 -----------------------------------------------------------------------------------------------
 -- Constants
@@ -29,10 +29,7 @@ local BustedTest = {}
 function BustedTest:new(o)
     o = o or {}
     setmetatable(o, self)
-    self.__index = self 
-
-    self.tSavedData={}
-    self.tSavedData["v"]=0
+    self.__index = self
 
     -- initialize variables here
 
@@ -86,7 +83,7 @@ function BustedTest:OnTestAll(wndHandler, wndControl, eButton)
 end
 
 -----------------------------------------------------------------------------------------------
--- Jabbithole Instance
+-- BustedTest Instance
 -----------------------------------------------------------------------------------------------
 local BustedTestInst = BustedTest:new()
 BustedTestInst:Init()
