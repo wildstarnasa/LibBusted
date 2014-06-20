@@ -7,7 +7,7 @@
     <Test Name="Asserts" File="tests\Asserts.lua"/>
     <Test Name="Core" File="tests\Core.lua"/>
     <Test Name="Define" File="tests\Define.lua"/>
-    <Test Name="Execution" File="tests\Execution.lua"/>
+    <Test Name="Execution" File="tests\ExecutionOrder.lua"/>
     <Test Name="Failing Supports" File="tests\FailingSupport.lua"/>
     <Test Name="Finally" File="tests\Finally.lua"/>
     <Test Name="Mocks" File="tests\Mocks.lua"/>

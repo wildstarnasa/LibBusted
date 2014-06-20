@@ -2991,6 +2991,8 @@ local function outputSound(options, busted)
     Sound.Play(soundNum)
     Print(messages[math.random(1, #messages)])
 
+    isFailure = false
+
     return nil, true
   end
 

@@ -78,7 +78,7 @@ local function has_property(state, arguments)
 
 	return state.mod == has_key
 end
-feeBin()
+
 s:set("assertion.has_property.positive", "Expected property %s in:\n%s")
 s:set("assertion.has_property.negative", "Expected property %s to not be in:\n%s")
 assert:register("assertion", "has_property", has_property, "assertion.has_property.positive", "assertion.has_property.negative")
