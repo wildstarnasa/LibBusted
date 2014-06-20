@@ -594,9 +594,8 @@ do
     function ref.parent(child)
       return parents[child]
     end
-local nIndex = 1
+
     function ref.push(child)
-      nIndex = nIndex + 1
       if not parents[child] then error('Detached child. Cannot push.') end
       ctx = child
     end
@@ -605,7 +604,6 @@ local nIndex = 1
 			if parents[ctx] then -- TODO: Determine if this is the correct fix
       	ctx = parents[ctx]
 			end
-			nIndex = nIndex - 1
     end
 
 		function ref.reset()
@@ -806,7 +804,6 @@ do
       local executor = executors[v.descriptor]
       if executor then
         busted.safe(v.descriptor, function() return executor(v) end, v)
-        --executor(v)
       end
     end
   end
