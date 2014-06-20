@@ -386,8 +386,7 @@ local function mock(object, dostub, self, key)
 end
 
 local function unmock(object)
-	local data_type = type(object)
-	if data_type == "table" then
+	if type(object) == "table" then
 		if spy.is_spy(object) then
 			object:revert()
 		else
@@ -595,15 +594,29 @@ do
     function ref.parent(child)
       return parents[child]
     end
-
+local nIndex = 1
     function ref.push(child)
+      nIndex = nIndex + 1
       if not parents[child] then error('Detached child. Cannot push.') end
       ctx = child
     end
 
     function ref.pop()
-      ctx = parents[ctx]
+			if parents[ctx] then -- TODO: Determine if this is the correct fix
+      	ctx = parents[ctx]
+			end
+			nIndex = nIndex - 1
     end
+
+		function ref.reset()
+			for k,v in pairs(ctx) do
+				if k ~= "env" then
+					ctx[k] = nil
+				end
+			end
+			parents = {}
+			children = {}
+		end
 
     return ref
   end
@@ -669,6 +682,7 @@ do
 
   local environment = buildEnvironment(busted.context)
   environment.set('mock', mock)
+  environment.set('unmock', unmock)
   environment.set('spy', spy)
   environment.set('stub', stub)
   environment.set('s', s)
@@ -792,6 +806,7 @@ do
       local executor = executors[v.descriptor]
       if executor then
         busted.safe(v.descriptor, function() return executor(v) end, v)
+        --executor(v)
       end
     end
   end
@@ -2922,6 +2937,10 @@ local function outputPlainTerminal(options, busted)
       Print(failureDescription(err))
     end
 
+		tests, successes, failures, pendings = 0, 0, 0, 0
+
+		failureInfos, pendingInfos = {}, {}
+
     return nil, true
   end
 
@@ -3031,7 +3050,7 @@ end
 local LuaTests
 do
 	local ret = {}
-	local getTrace =  function(filename, info)
+  local getTrace =  function(filename, info)
 		local index = info.traceback:find('\n%s*%[C]')
 		info.traceback = info.traceback:sub(1, index)
 		return info, false
@@ -3091,6 +3110,7 @@ local function ExecuteTests()
   busted.publish({ 'suite', 'start' })
   busted.execute()
   busted.publish({ 'suite', 'end' })
+	busted.context.reset()
 end
 
 local loaders = {
