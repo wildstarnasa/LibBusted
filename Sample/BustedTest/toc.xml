@@ -4,15 +4,15 @@
     <Script Name="libs\LibBusted-2.0\LibBusted-2.0.lua"/>
     <Script Name="BustedTest.lua"/>
     <Form Name="BustedTest.xml"/>
-    <Test Name="Asserts" File="tests\Asserts.lua"/>
-    <Test Name="Core" File="tests\Core.lua"/>
-    <Test Name="Define" File="tests\Define.lua"/>
-    <Test Name="Execution" File="tests\ExecutionOrder.lua"/>
-    <Test Name="Failing Supports" File="tests\FailingSupport.lua"/>
-    <Test Name="Finally" File="tests\Finally.lua"/>
-    <Test Name="Mocks" File="tests\Mocks.lua"/>
-    <Test Name="Spies" File="tests\Spies.lua"/>
-    <Test Name="Stubs" File="tests\Stubs.lua"/>
-    <Test Name="One Success" File="tests\Success.lua"/>
-    <Test Name="Two Fails" File="tests\TwoFails.lua"/>
+    <Test Name="Asserts" File="tests\Asserts_spec.lua"/>
+    <Test Name="Core" File="tests\Core_spec.lua"/>
+    <Test Name="Define" File="tests\Define_spec.lua"/>
+    <Test Name="Execution" File="tests\ExecutionOrder_spec.lua"/>
+    <Test Name="Failing Supports" File="tests\FailingSupport_spec.lua"/>
+    <Test Name="Finally" File="tests\Finally_spec.lua"/>
+    <Test Name="Mocks" File="tests\Mocks_spec.lua"/>
+    <Test Name="Spies" File="tests\Spies_spec.lua"/>
+    <Test Name="Stubs" File="tests\Stubs_spec.lua"/>
+    <Test Name="One Success" File="tests\Success_spec.lua"/>
+    <Test Name="Two Fails" File="tests\TwoFails_spec.lua"/>
 </Addon>

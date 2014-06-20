@@ -2943,7 +2943,7 @@ local function outputPlainTerminal(options, busted)
 
   handler.error = function(element, parent, message, debug)
     table.insert(failureInfos, {
-      elementTrace = element.trace,
+      elementTrace = element.trace or debug,
       name = element.name,
       descriptor = element.descriptor,
       message = message,
