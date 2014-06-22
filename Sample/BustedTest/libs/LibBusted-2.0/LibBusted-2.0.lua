@@ -373,6 +373,8 @@ local function mock(object, dostub, self, key)
         object[k] = mock(v, dostub, object, k)
       end
     end
+  elseif data_type == "userdata" then
+    mock(getmetatable(object), dostub, self, key)
   elseif data_type == "function" then
     if dostub then
       return stub(self, key)
@@ -386,15 +388,16 @@ local function mock(object, dostub, self, key)
 end
 
 local function unmock(object)
-	if type(object) == "table" then
-		if spy.is_spy(object) then
-			object:revert()
-		else
-			for k,v in pairs(object) do
-				unmock(v)
-			end
-		end
-	end
+  local mockedObject = type(object) == "userdata" and getmetatable(object) or object
+  if type(mockedObject) == "table" then
+    if spy.is_spy(mockedObject) then
+      mockedObject:revert()
+    else
+      for k,v in pairs(mockedObject) do
+        unmock(v)
+      end
+    end
+  end
 end
 
 -------------------------------------------------------------------------------
