@@ -3196,7 +3196,7 @@ function busted:OnDependencyError(strDep, strError)
 end
 
 function busted:OnLoad()
-  strLocale = GetLocale()
+  local strLocale = GetLocale()
   if strLocale == "enUS" then
     s:set_namespace('en')
 
