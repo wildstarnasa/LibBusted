@@ -1,4 +1,4 @@
-local MAJOR,MINOR = "Lib:Busted-2.0", 1
+local MAJOR,MINOR = "Lib:Busted-2.0", 2
 -- Get a reference to the package information if any
 local APkg = Apollo.GetPackage(MAJOR)
 -- If there was an older version loaded we need to see if this is newer
@@ -14,7 +14,7 @@ local BustedTests   = setmetatable({}, { __index = function(tbl, key) tbl[key] =
 --- Olivine-Labs Say
 -------------------------------------------------------------------------------
 
-local SAY_MAJOR, SAY_MINOR = "Olivine:Say-1.0", 1
+local SAY_MAJOR, SAY_MINOR = "Olivine:Say-1.0", 2
 -- Get a reference to the package information if any
 local APkg = Apollo.GetPackage(SAY_MAJOR)
 -- Set a reference to the actual package or create an empty table
@@ -88,6 +88,7 @@ if not APkg or (APkg.nVersion or 0) < SAY_MINOR then
 
     setmetatable(s, __meta)
   end
+  function s:OnLoad() end
   Apollo.RegisterPackage(s, SAY_MAJOR, SAY_MINOR, {})
 end
 
@@ -2795,7 +2796,6 @@ local function outputPlainTerminal(options, busted)
     while parent and (parent.name or parent.descriptor) and
           parent.descriptor ~= 'file' do
 
-      current_context = context.parent
       table.insert(names, 1, parent.name or parent.descriptor)
       parent = busted.context.parent(parent)
     end
@@ -3300,7 +3300,7 @@ function busted:OnLoad()
     s:set('output.seconds', 'secondes')
 
     -- definitions following are not used within the 'say' namespace
-    failure_messages = {
+    self.failure_messages = {
       'Vous avez %d test(s) qui a/ont echoue(s)',
       'Vos tests ont echoue.',
       'Votre code source est mauvais et vous devrez vous sentir mal',
@@ -3310,7 +3310,7 @@ function busted:OnLoad()
       'A chaque erreur, prenez une biere',
       'Ca craint, mon pote'
     }
-    success_messages = {
+    self.success_messages = {
       'Oh yeah, tests reussis',
       'Pas grave, y\'a eu du succes',
       'C\'est du bon, mon pote. Que du bon!',
@@ -3331,7 +3331,7 @@ function busted:OnLoad()
     deferPrint = false,
   }
 
-  outputHandler = outputPlainTerminal(outputHandlerOptions, busted) -- (only choice for now)
+  local outputHandler = outputPlainTerminal(outputHandlerOptions, busted) -- (only choice for now)
 
   busted.subscribe({ 'test', 'start' }, outputHandler.testStart)
   busted.subscribe({ 'test', 'end' }, outputHandler.testEnd)
