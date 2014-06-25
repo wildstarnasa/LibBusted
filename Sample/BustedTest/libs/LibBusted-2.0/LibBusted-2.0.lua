@@ -2879,9 +2879,8 @@ local function outputPlainTerminal(options, busted)
       successes = successes + 1
     elseif status == 'pending' then
       if not options.suppressPending then
-        pendings = pendings + 1
-        Print(pendingString)       -- needed?
-        -- io.write(pendingString) -- needed?
+        Print(pendingString)
+				pendings = pendings + 1
         table.insert(pendingInfos, {
           name = element.name,
           elementTrace = element.trace,
