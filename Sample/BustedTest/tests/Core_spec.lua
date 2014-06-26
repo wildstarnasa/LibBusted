@@ -187,27 +187,27 @@ describe("Testing test order", function()
   describe("Test testorder", function()
     it("verifies order of execution", function()
     local expected = [[setup A
-before_each A
-test A one
-after_each A
-before_each A
-test A two
-after_each A
-setup B
-before_each A
-before_each B
-test B one
-after_each B
-after_each A
-before_each A
-before_each B
-test B two
-after_each B
-after_each A
-teardown B
-before_each A
-test A three
-after_each A
+  before_each A
+    test A one
+  after_each A
+  before_each A
+    test A two
+  after_each A
+  setup B
+    before_each A
+      before_each B
+        test B one
+      after_each B
+    after_each A
+    before_each A
+      before_each B
+        test B two
+      after_each B
+    after_each A
+  teardown B
+  before_each A
+    test A three
+  after_each A
 teardown A
 ]]
       assert.is.equal(expected, testorder)

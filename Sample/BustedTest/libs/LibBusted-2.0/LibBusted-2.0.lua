@@ -1,4 +1,4 @@
-local MAJOR,MINOR = "Lib:Busted-2.0", 2
+local MAJOR,MINOR = "Lib:Busted-2.0", 3
 -- Get a reference to the package information if any
 local APkg = Apollo.GetPackage(MAJOR)
 -- If there was an older version loaded we need to see if this is newer
@@ -315,7 +315,7 @@ local stub = {}
 do
   local stubfunc = function() end
 
-  function stub.new(object, key)
+  function stub.new(object, key, func)
     if object == nil and key == nil then
       -- called without arguments, create a 'blank' stub
       object = {}
@@ -324,8 +324,8 @@ do
     assert(type(object) == "table" and key ~= nil, "stub.new(): Can only create stub on a table key, call with 2 params; table, key")
     assert(object[key] == nil or util.callable(object[key]), "stub.new(): The element for which to create a stub must either be callable, or be nil")
     local old_elem = object[key]    -- keep existing element (might be nil!)
-    object[key] = stubfunc          -- set the stubfunction
-    local s = spy.on(object, key)   -- create a spy on top of the stub function
+		object[key] = type(func) == "function" and func or stubfunc  -- set the stubfunction
+	  local s = spy.on(object, key)   -- create a spy on top of the stub function
     local spy_revert = s.revert     -- keep created revert function
 
     s.revert = function(self)       -- wrap revert function to restore original element
@@ -364,21 +364,21 @@ end
 --- Olivine-Labs mock
 -------------------------------------------------------------------------------
 
-local function mock(object, dostub, self, key)
+local function mock(object, dostub, func, self, key)
   local data_type = type(object)
   if data_type == "table" then
     if spy.is_spy(object) then
       -- this table is a function already wrapped as a spy, so nothing to do here
     else
       for k,v in pairs(object) do
-        object[k] = mock(v, dostub, object, k)
+        object[k] = mock(v, dostub, func, object, k)
       end
     end
   elseif data_type == "userdata" then
-    mock(getmetatable(object), dostub, self, key)
+    mock(getmetatable(object), dostub, func, self, key)
   elseif data_type == "function" then
     if dostub then
-      return stub(self, key)
+      return stub(self, key, func)
     elseif self==nil then
       return spy.new(object)
     else
@@ -2879,9 +2879,8 @@ local function outputPlainTerminal(options, busted)
       successes = successes + 1
     elseif status == 'pending' then
       if not options.suppressPending then
-        pendings = pendings + 1
-        Print(pendingString)       -- needed?
-        -- io.write(pendingString) -- needed?
+        Print(pendingString)
+				pendings = pendings + 1
         table.insert(pendingInfos, {
           name = element.name,
           elementTrace = element.trace,
