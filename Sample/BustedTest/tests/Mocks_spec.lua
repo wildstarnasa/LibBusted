@@ -1,7 +1,7 @@
 describe("mocks", function()
 	it("replaces a table with spies", function()
 		local t = {
-			thing = function(msg) print(msg) end
+			thing = function(msg) Print(msg) end
 		}
 
 		local m = mock(t) -- mocks the table with spies, so it will print
@@ -12,7 +12,7 @@ describe("mocks", function()
 
 	it("replaces a table with stubs", function()
 		local t = {
-			thing = function(msg) print(msg) end
+			thing = function(msg) Print(msg) end
 		}
 
 		local m = mock(t, true) -- mocks the table with stubs, so it will not print

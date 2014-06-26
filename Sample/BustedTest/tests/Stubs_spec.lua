@@ -1,7 +1,7 @@
 describe("stubs", function()
 	it("replaces an original function", function()
 		local t = {
-			greet = function(msg) print(msg) end
+			greet = function(msg) Print(msg) end
 		}
 
 		stub(t, "greet")

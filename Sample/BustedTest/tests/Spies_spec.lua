@@ -12,7 +12,7 @@ describe("spies", function()
 
 	it("replaces an original function", function()
 		local t = {
-			greet = function(msg) print(msg) end
+			greet = function(msg) Print(msg) end
 		}
 
 		local s = spy.on(t, "greet")
