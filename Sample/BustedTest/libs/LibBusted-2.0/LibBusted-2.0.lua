@@ -1,4 +1,4 @@
-local MAJOR,MINOR = "Lib:Busted-2.0", 3
+local MAJOR,MINOR = "Lib:Busted-2.0", 4
 -- Get a reference to the package information if any
 local APkg = Apollo.GetPackage(MAJOR)
 -- If there was an older version loaded we need to see if this is newer
@@ -3108,10 +3108,15 @@ local function GetLocale()
 end
 
 local function ExecuteTests()
-  busted.publish({ 'suite', 'start' })
-  busted.execute()
-  busted.publish({ 'suite', 'end' })
+	local register = busted.Register
+	busted.Register = function() end
+
+	busted.publish({ 'suite', 'start' })
+	busted.execute()
+	busted.publish({ 'suite', 'end' })
 	busted.context.reset()
+
+	busted.Register = register
 end
 
 local loaders = {
@@ -3346,6 +3351,14 @@ function busted:OnLoad()
     busted.subscribe({ 'suite', 'end' }, sound.suiteEnd)
     busted.subscribe({ 'error' }, sound.error)
   end
+end
+
+if _TESTRUNNER then
+	function busted:RunAllTests()
+		for addon, tests in pairs(BustedTests) do
+			addon:RunTests()
+		end
+	end
 end
 
 Apollo.RegisterPackage(busted, MAJOR, MINOR, {"Lib:Assert-1.0"})
