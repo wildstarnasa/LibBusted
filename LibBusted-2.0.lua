@@ -3108,10 +3108,15 @@ local function GetLocale()
 end
 
 local function ExecuteTests()
+  local register = busted.Register
+  busted.Register = function() end
+
   busted.publish({ 'suite', 'start' })
   busted.execute()
   busted.publish({ 'suite', 'end' })
 	busted.context.reset()
+  
+  busted.Register = register
 end
 
 local loaders = {
@@ -3345,6 +3350,14 @@ function busted:OnLoad()
     busted.subscribe({ 'test', 'end' }, sound.testEnd)
     busted.subscribe({ 'suite', 'end' }, sound.suiteEnd)
     busted.subscribe({ 'error' }, sound.error)
+  end
+end
+
+if _TESTRUNNER then
+  function busted:RunAllTests()
+    for addon, tests in pairs(BustedTests) do
+      addon:RunTests()
+    end
   end
 end
 
