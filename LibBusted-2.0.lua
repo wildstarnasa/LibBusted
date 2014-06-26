@@ -3348,9 +3348,11 @@ function busted:OnLoad()
   end
 end
 
-function busted:RunAllTests()
-  for addon, tests in pairs(BustedTests) do
-    addon:RunTests()
+if _TESTRUNNER then
+  function busted:RunAllTests()
+    for addon, tests in pairs(BustedTests) do
+      addon:RunTests()
+    end
   end
 end
 
