@@ -3108,10 +3108,15 @@ local function GetLocale()
 end
 
 local function ExecuteTests()
+  local register = busted.Register
+  busted.Register = function() end
+
   busted.publish({ 'suite', 'start' })
   busted.execute()
   busted.publish({ 'suite', 'end' })
 	busted.context.reset()
+  
+  busted.Register = register
 end
 
 local loaders = {
