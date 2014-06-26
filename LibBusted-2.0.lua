@@ -3348,4 +3348,12 @@ function busted:OnLoad()
   end
 end
 
+if _TESTRUNNER then
+  function busted:RunAllTests()
+    for addon, tests in pairs(BustedTests) do
+      addon:RunTests()
+    end
+  end
+end
+
 Apollo.RegisterPackage(busted, MAJOR, MINOR, {"Lib:Assert-1.0"})
