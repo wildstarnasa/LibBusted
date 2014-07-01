@@ -195,7 +195,7 @@ end
 --
 -- @table optable
 -- @field operator
- operator.optable = {
+operator.optable = {
     ['+']=operator.add,
     ['-']=operator.sub,
     ['*']=operator.mul,

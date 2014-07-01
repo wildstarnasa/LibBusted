@@ -3,7 +3,7 @@ local MAJOR, MINOR = "Lib:Penlight:Utils-1.0", 1
 local APkg = Apollo.GetPackage(MAJOR)
 -- If there was an older version loaded we need to see if this is newer
 if APkg and (APkg.nVersion or 0) >= MINOR then
-  return
+    return
 end
 
 -------------------------------------------------------------------------------
@@ -11,14 +11,14 @@ end
 -------------------------------------------------------------------------------
 
 local utils = {
-  _VERSION = "1.2.1",
-  lua51 = true,
-  setfenv = setfenv,
-  getfenv = getfenv,
-  load = loadstring,
-  execute = function() error("No os.execute Available!") end,
-  dir_separator = _G.package.config:sub(1,1),
-  unpack = unpack,
+    _VERSION = "1.2.1",
+    lua51 = true,
+    setfenv = setfenv,
+    getfenv = getfenv,
+    load = loadstring,
+    execute = function() error("No os.execute Available!") end,
+    dir_separator = _G.package.config:sub(1,1),
+    unpack = unpack,
 }
 local operator
 
@@ -262,11 +262,11 @@ local err_mode = 'default'
 -- @see utils.raise
 function utils.on_error (mode)
     if ({['default'] = 1, ['quit'] = 2, ['error'] = 3})[mode] then
-      err_mode = mode
+        err_mode = mode
     else
-      -- fail loudly
-      if err_mode == 'default' then err_mode = 'error' end
-      utils.raise("Bad argument expected string; 'default', 'quit', or 'error'. Got '"..tostring(mode).."'")
+        -- fail loudly
+        if err_mode == 'default' then err_mode = 'error' end
+        utils.raise("Bad argument expected string; 'default', 'quit', or 'error'. Got '"..tostring(mode).."'")
     end
 end
 
@@ -323,7 +323,7 @@ raise = utils.raise
 -- @function utils.execute
 
 function utils:OnLoad()
-  operator = Apollo.GetPackage("Lib:Penlight:Operator-1.0").tPackage
+    operator = Apollo.GetPackage("Lib:Penlight:Operator-1.0").tPackage
 end
 
 Apollo.RegisterPackage(utils, MAJOR, MINOR, {"Lib:Penlight:Operator-1.0"})

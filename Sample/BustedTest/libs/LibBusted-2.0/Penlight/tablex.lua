@@ -3,7 +3,7 @@ local MAJOR, MINOR = "Lib:Penlight:Tablex-1.0", 1
 local APkg = Apollo.GetPackage(MAJOR)
 -- If there was an older version loaded we need to see if this is newer
 if APkg and (APkg.nVersion or 0) >= MINOR then
-  return
+    return
 end
 
 -------------------------------------------------------------------------------
@@ -905,8 +905,8 @@ function tablex.readonly(t)
 end
 
 function tablex:OnLoad()
-  utils = Apollo.GetPackage("Lib:Penlight:Utils-1.0").tPackage
-  types = Apollo.GetPackage("Lib:Penlight:Types-1.0").tPackage
+    utils = Apollo.GetPackage("Lib:Penlight:Utils-1.0").tPackage
+    types = Apollo.GetPackage("Lib:Penlight:Types-1.0").tPackage
 end
 
 Apollo.RegisterPackage(tablex, MAJOR, MINOR, {"Lib:Penlight:Types-1.0", "Lib:Penlight:Utils-1.0"})

@@ -3,7 +3,7 @@ local MAJOR, MINOR = "Lib:Penlight:Types-1.0", 1
 local APkg = Apollo.GetPackage(MAJOR)
 -- If there was an older version loaded we need to see if this is newer
 if APkg and (APkg.nVersion or 0) >= MINOR then
-  return
+    return
 end
 
 -------------------------------------------------------------------------------
