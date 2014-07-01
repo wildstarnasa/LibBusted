@@ -13,6 +13,9 @@ local pretty
 
 local BustedTests = setmetatable({}, { __index = function(tbl, key) tbl[key] = {} return tbl[key] end })
 
+local tLibError = Apollo.GetPackage("Gemini:LibError-1.0")
+local fnErrorHandler = tLibError and tLibError.tPackage and tLibError.tPackage.Error or Print
+
 -- first load the submodules
 local function loadModule(dir, folder, file)
     local func = assert(loadfile(dir..folder.."\\"..file..".lua"))
@@ -40,10 +43,6 @@ loadModule(dir, "Penlight", "types")
 loadModule(dir, "Penlight", "tablex")
 loadModule(dir, "Penlight", "pretty")
 
-loadModule(dir, "Busted", "context")
-loadModule(dir, "Busted", "done")
-loadModule(dir, "Busted", "environment")
-loadModule(dir, "Busted", "init")
 loadModule(dir, "Busted", "core")
 
 -------------------------------------------------------------------------------

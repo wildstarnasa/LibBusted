@@ -1,18 +1,24 @@
-local MAJOR, MINOR = "Olivine:Busted:InitLib-2.0", 1
--- Get a reference to the package information if any
-local APkg = Apollo.GetPackage(MAJOR)
--- If there was an older version loaded we need to see if this is newer
-if APkg and (APkg.nVersion or 0) >= MINOR then
-    return
+local tLibError = Apollo.GetPackage("Gemini:LibError-1.0")
+local fnErrorHandler = tLibError and tLibError.tPackage and tLibError.tPackage.Error or Print
+
+-- first load the submodule
+local function loadModule(dir, file)
+    local func = assert(loadfile(dir..file..".lua"))
+    if func then
+        return xpcall(func, fnErrorHandler)
+    end
 end
+
+-- This gets the current directory of this file, so it also works when embedded
+local strsub, strgsub, debug = string.sub, string.gsub, debug
+local dir = string.sub(string.gsub(debug.getinfo(1).source, "^(.+[\\/])[^\\/]+$", "%1"), 2, -1)
+
+local BustedDone = loadModule(dir, "done")
 
 -------------------------------------------------------------------------------
 --- Olivine-Labs Busted-Init
 -------------------------------------------------------------------------------
 
-local InitLib = APkg and APkg.tPackage or {}
-
-local BustedDone = Apollo.GetPackage("Olivine:Busted:Done-2.0").tPackage
 --math.randomseed(os.time())
 
 local function shuffle(t)
@@ -25,7 +31,7 @@ local function shuffle(t)
     return t
 end
 
-InitLib.Init = function(busted)
+return function(busted)
     local function execAll(descriptor, current, propagate)
         local parent = busted.context.parent(current)
 
@@ -141,5 +147,3 @@ InitLib.Init = function(busted)
 
     return busted
 end
-
-Apollo.RegisterPackage(InitLib, MAJOR, MINOR, {"Olivine:Busted:Done-2.0"})

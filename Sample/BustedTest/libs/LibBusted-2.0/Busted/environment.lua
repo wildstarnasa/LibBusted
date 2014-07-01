@@ -1,17 +1,7 @@
-local MAJOR, MINOR = "Olivine:Busted:Environment-2.0", 1
--- Get a reference to the package information if any
-local APkg = Apollo.GetPackage(MAJOR)
--- If there was an older version loaded we need to see if this is newer
-if APkg and (APkg.nVersion or 0) >= MINOR then
-    return
-end
-
 -------------------------------------------------------------------------------
 --- Olivine-Labs Busted-Environment
 -------------------------------------------------------------------------------
-LibEnvironment = APkg and APkg.tPackage or {}
-
-LibEnvironment.Builder = function(context)
+return function(context)
 
     local environment = {}
 
@@ -54,5 +44,3 @@ LibEnvironment.Builder = function(context)
     end
     return environment
 end
-
-Apollo.RegisterPackage(LibEnvironment, MAJOR, MINOR, {})

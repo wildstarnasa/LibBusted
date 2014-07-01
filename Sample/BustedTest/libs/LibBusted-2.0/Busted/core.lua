@@ -11,6 +11,23 @@ end
 -------------------------------------------------------------------------------
 local busted = APkg and APkg.tPackage or {}
 
+local tLibError = Apollo.GetPackage("Gemini:LibError-1.0")
+local fnErrorHandler = tLibError and tLibError.tPackage and tLibError.tPackage.Error or Print
+
+-- first load the submodules
+local function loadModule(dir, file)
+    local func = assert(loadfile(dir..file..".lua"))
+    if func then
+        return xpcall(func, fnErrorHandler)
+    end
+end
+
+-- This gets the current directory of this file, so it also works when embedded
+local strsub, strgsub, debug = string.sub, string.gsub, debug
+local dir = string.sub(string.gsub(debug.getinfo(1).source, "^(.+[\\/])[^\\/]+$", "%1"), 2, -1)
+
+loadModule(dir, "done")
+
 local mediator
 busted.version = '2.0-1'
 
@@ -299,10 +316,11 @@ function busted:OnLoad()
 
     mediator = Apollo.GetPackage("Olivine:Mediator-1.0").tPackage()
 
-    busted.context = Apollo.GetPackage("Olivine:Busted:Context-2.0").tPackage.ref()
+    local root = loadModule(dir, "context")()
+    busted.context = root.ref()
 
-    LibEnvironment = Apollo.GetPackage("Olivine:Busted:Environment-2.0").tPackage
-    environment = LibEnvironment.Builder(busted.context)
+    local envBuilder = loadModule(dir, "Busted", "environment")
+    environment = envBuilder(busted.context)
 
     local mockLib = Apollo.GetPackage("Olivine:Luassert:Mock-1.0").tPackage
 
@@ -312,7 +330,8 @@ function busted:OnLoad()
     environment.set('stub', Apollo.GetPackage("Olivine:Luassert:Stub-1.0").tPackage)
     environment.set('s', s)
 
-    Apollo.GetPackage("Olivine:Busted:InitLib-2.0").tPackage.Init(busted)
+    local initFunc = loadModule(dir, "init")
+    initFunc(busted)
 end
 
 local tDependencies = {

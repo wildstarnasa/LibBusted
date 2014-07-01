@@ -1,16 +1,8 @@
-local MAJOR, MINOR = "Olivine:Busted:Done-2.0", 1
--- Get a reference to the package information if any
-local APkg = Apollo.GetPackage(MAJOR)
--- If there was an older version loaded we need to see if this is newer
-if APkg and (APkg.nVersion or 0) >= MINOR then
-    return
-end
-
 -------------------------------------------------------------------------------
 --- Olivine-Labs Busted-Done
 -------------------------------------------------------------------------------
 
-local M = APkg and APkg.tPackage or {}
+local M = {}
 
 -- adds tokens to the current wait list, does not change order/unordered
 M.wait = function(self, ...)
@@ -130,4 +122,4 @@ M.new = function(done_callback)
     })
 end
 
-Apollo.RegisterPackage(M, MAJOR, MINOR, tDependencies)
+return M
