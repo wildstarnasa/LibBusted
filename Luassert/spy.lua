@@ -8,7 +8,7 @@ end
 -------------------------------------------------------------------------------
 --- Olivine-Labs spy
 -------------------------------------------------------------------------------
-local util = Apollo.GetPackage("Olivine:Luassert:Util-1.0").tPackage
+local util
 
 -- Set a reference to the actual package or create an empty table
 local spy = APkg and APkg.tPackage or {}
@@ -111,6 +111,7 @@ local function called(state, arguments)
 end
 
 function spy:OnLoad()
+    util = Apollo.GetPackage("Olivine:Luassert:Util-1.0").tPackage
     assert:register("modifier", "spy", set_spy)
     assert:register("assertion", "called_with", called_with, "assertion.called_with.positive", "assertion.called_with.negative")
     assert:register("assertion", "called", called, "assertion.called.positive", "assertion.called.negative")

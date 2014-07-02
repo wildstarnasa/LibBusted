@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Addon Author="Sinaloit" APIVersion="8" Name="BustedTest" Description="Unit Testing" Version="0.1a">
+    <Script Name="libs\LibError\LibError-1.0.lua"/>
     <Script Name="libs\LibAssert-1.0\LibAssert-1.0.lua"/>
     <Script Name="libs\LibBusted-2.0\LibBusted-2.0.lua"/>
     <Script Name="BustedTest.lua"/>

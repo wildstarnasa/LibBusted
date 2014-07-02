@@ -9,7 +9,8 @@ end
 -------------------------------------------------------------------------------
 --- Olivine-Labs stub
 -------------------------------------------------------------------------------
-local util = Apollo.GetPackage("Olivine:Luassert:Util-1.0").tPackage
+local util
+local spy
 
 -- Set a reference to the actual package or create an empty table
 local stub = APkg and APkg.tPackage or {}
@@ -57,6 +58,9 @@ stub = setmetatable( stub, {
         end })
 
 function stub:OnLoad()
+    util = Apollo.GetPackage("Olivine:Luassert:Util-1.0").tPackage
+    spy = Apollo.GetPackage("Olivine:Luassert:Spy-1.0").tPackage
+
     assert:register("modifier", "stub", set_stub)
 end
 

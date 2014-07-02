@@ -404,7 +404,7 @@ end
 function LibBusted:OnLoad()
     s = Apollo.GetPackage("Olivine:Say-1.0").tPackage
     pretty = Apollo.GetPackage("Lib:Penlight:Pretty-1.0").tPackage
-    busted = Apollo.GetPackaget("Olivine:Busted:Core-2.0").tPackage
+    busted = Apollo.GetPackage("Olivine:Busted:Core-2.0").tPackage
 
     -- Set up output handler to listen to events TODO: Allow config, support tags
     local outputHandlerOptions = {
@@ -440,6 +440,7 @@ if _TESTRUNNER then
 end
 
 local tDependencies = {
+    "Gemini:LibError-1.0",
     "Lib:Assert-1.0",
     "Olivine:Say-1.0",
     "Olivine:Busted:Core-2.0",

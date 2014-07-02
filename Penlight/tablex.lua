@@ -24,11 +24,11 @@ local getmetatable,setmetatable = getmetatable,setmetatable
 local tsort,append,remove = table.sort,table.insert,table.remove
 local min,max = math.min,math.max
 local pairs,type,unpack,next,select,tostring = pairs,type,unpack,next,select,tostring
-local function_arg = utils.function_arg
-local Set = utils.stdmt.Set
-local List = utils.stdmt.List
-local Map = utils.stdmt.Map
-local assert_arg = utils.assert_arg
+local function_arg
+local Set
+local List
+local Map
+local assert_arg
 
 -- generally, functions that make copies of tables try to preserve the metatable.
 -- However, when the source has no obvious type, then we attach appropriate metatables
@@ -907,6 +907,12 @@ end
 function tablex:OnLoad()
     utils = Apollo.GetPackage("Lib:Penlight:Utils-1.0").tPackage
     types = Apollo.GetPackage("Lib:Penlight:Types-1.0").tPackage
+
+    function_arg = utils.function_arg
+    Set = utils.stdmt.Set
+    List = utils.stdmt.List
+    Map = utils.stdmt.Map
+    assert_arg = utils.assert_arg
 end
 
 Apollo.RegisterPackage(tablex, MAJOR, MINOR, {"Lib:Penlight:Types-1.0", "Lib:Penlight:Utils-1.0"})

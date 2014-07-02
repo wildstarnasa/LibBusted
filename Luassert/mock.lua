@@ -9,10 +9,10 @@ end
 -------------------------------------------------------------------------------
 --- Olivine-Labs mock
 -------------------------------------------------------------------------------
-local stub = Apollo.GetPackage("Olivine:Luassert:Stub-1.0").tPackage
-local spy = Apollo.GetPackage("Olivine:Luassert:Spy-1.0").tPackage
-
 local mocklib = APkg and APkg.tPackage or {}
+
+local stub
+local spy
 
 local function mock(object, dostub, func, self, key)
     local data_type = type(object)
@@ -53,5 +53,10 @@ end
 
 mocklib.mock = mock
 mocklib.unmock = unmock
+
+function mocklib:OnLoad()
+    stub = Apollo.GetPackage("Olivine:Luassert:Stub-1.0").tPackage
+    spy = Apollo.GetPackage("Olivine:Luassert:Spy-1.0").tPackage
+end
 
 Apollo.RegisterPackage(mocklib, MAJOR, MINOR, {"Olivine:Luassert:Stub-1.0", "Olivine:Luassert:Spy-1.0"})

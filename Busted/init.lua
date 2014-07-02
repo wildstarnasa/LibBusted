@@ -5,7 +5,9 @@ local fnErrorHandler = tLibError and tLibError.tPackage and tLibError.tPackage.E
 local function loadModule(dir, file)
     local func = assert(loadfile(dir..file..".lua"))
     if func then
-        return xpcall(func, fnErrorHandler)
+        -- Does not handle multiple return values, but these are not using that.
+        local bSuccess, retVal = xpcall(func, fnErrorHandler)
+        return retVal
     end
 end
 

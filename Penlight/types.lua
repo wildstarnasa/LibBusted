@@ -24,13 +24,6 @@ function types.is_callable (obj)
     return type(obj) == 'function' or getmetatable(obj) and getmetatable(obj).__call
 end
 
---- is the object of the specified type?.
--- If the type is a string, then use type, otherwise compare with metatable
--- @param obj An object to check
--- @param tp String of what type it should be
--- @function is_type
-types.is_type = utils.is_type
-
 --- a string representation of a type.
 -- For tables with metatables, we assume that the metatable has a `_name`
 -- field. Knows about Lua file objects.
@@ -146,7 +139,14 @@ function types.to_bool(o, true_strs, check_objs)
 end
 
 function types:OnLoad()
-  utils = Apollo.GetPackage("Lib:Penlight:Utils-1.0").tPackage
+    utils = Apollo.GetPackage("Lib:Penlight:Utils-1.0").tPackage
+
+    --- is the object of the specified type?.
+    -- If the type is a string, then use type, otherwise compare with metatable
+    -- @param obj An object to check
+    -- @param tp String of what type it should be
+    -- @function is_type
+    types.is_type = utils.is_type
 end
 
 Apollo.RegisterPackage(types, MAJOR, MINOR, {"Lib:Penlight:Utils-1.0"})

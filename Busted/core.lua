@@ -18,7 +18,9 @@ local fnErrorHandler = tLibError and tLibError.tPackage and tLibError.tPackage.E
 local function loadModule(dir, file)
     local func = assert(loadfile(dir..file..".lua"))
     if func then
-        return xpcall(func, fnErrorHandler)
+        -- Does not handle multiple return values, but these are not using that.
+        local bSuccess, retVal = xpcall(func, fnErrorHandler)
+        return retVal
     end
 end
 
@@ -316,10 +318,10 @@ function busted:OnLoad()
 
     mediator = Apollo.GetPackage("Olivine:Mediator-1.0").tPackage()
 
-    local root = loadModule(dir, "context")()
-    busted.context = root.ref()
+    local rootFunc = loadModule(dir, "context")
+    busted.context = rootFunc().ref()
 
-    local envBuilder = loadModule(dir, "Busted", "environment")
+    local envBuilder = loadModule(dir, "environment")
     environment = envBuilder(busted.context)
 
     local mockLib = Apollo.GetPackage("Olivine:Luassert:Mock-1.0").tPackage
@@ -336,12 +338,10 @@ end
 
 local tDependencies = {
     "Olivine:Mediator-1.0",
-    "Olivine:Busted:Context-2.0",
     "Olivine:Luassert:Mock-1.0",
     "Olivine:Luassert:Spy-1.0",
     "Olivine:Luassert:Stub-1.0",
     "Olivine:Say-1.0",
-    "Olivine:Busted:InitLib-2.0",
 }
 
 Apollo.RegisterPackage(busted, MAJOR, MINOR, tDependencies)
