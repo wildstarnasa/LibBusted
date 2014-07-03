@@ -6,12 +6,14 @@
     <Script Name="BustedTest.lua"/>
     <Form Name="BustedTest.xml"/>
     <Test Name="Asserts" File="tests\Asserts_spec.lua"/>
+    <Test Name="Async" File="tests\Async_spec.lua"/>
     <Test Name="Core" File="tests\Core_spec.lua"/>
     <Test Name="Define" File="tests\Define_spec.lua"/>
     <Test Name="Execution" File="tests\ExecutionOrder_spec.lua"/>
     <Test Name="Failing Supports" File="tests\FailingSupport_spec.lua"/>
     <Test Name="Finally" File="tests\Finally_spec.lua"/>
     <Test Name="Mocks" File="tests\Mocks_spec.lua"/>
+    <Test Name="Randomize" File="tests\Randomize_spec.lua"/>
     <Test Name="Spies" File="tests\Spies_spec.lua"/>
     <Test Name="Stubs" File="tests\Stubs_spec.lua"/>
     <Test Name="One Success" File="tests\Success_spec.lua"/>
