@@ -7,9 +7,8 @@ if APkg and (APkg.nVersion or 0) >= MINOR then
 end
 -- Set a reference to the actual package or create an empty table
 local LibBusted = APkg and APkg.tPackage or {}
-local s -- Olivine-Say
-local busted
-local pretty
+local s, busted, pretty -- Olivine-Say, Olivine-Busted, Penlight-Pretty
+local tags, excludeTags
 
 local BustedTests = setmetatable({}, { __index = function(tbl, key) tbl[key] = {} return tbl[key] end })
 
@@ -319,6 +318,30 @@ end
 -------------------------------------------------------------------------------
 --- Olivine-Labs Busted - v2
 -------------------------------------------------------------------------------
+
+local checkTag = function(name, tag, modifier)
+  local found = name:find('#' .. tag)
+  return (modifier == (found ~= nil))
+end
+
+local checkTags = function(name)
+  if #tags == 0 and #excludeTags == 0 then return nil, true end
+
+  for i, tag in pairs(tags) do
+    if not checkTag(name, tag, true) then
+      return nil, false
+    end
+  end
+
+  for i, tag in pairs(excludeTags) do
+    if not checkTag(name, tag, false) then
+      return nil, false
+    end
+  end
+
+  return nil, true
+end
+
 local function ExecuteTests()
     local register = LibBusted.Register
     LibBusted.Register = function() end
@@ -331,12 +354,15 @@ local function ExecuteTests()
     LibBusted.Register = register
 end
 
-local function RunTest(self, strTest)
+local function RunTest(self, strTest, config)
     local strFile = BustedTests[self][strTest]
     if not strFile then return end
     local testFile, getTrace = LuaTests.load(busted, strFile)
 
     if testFile then
+        tags = config and config.tags or {}
+        excludeTags = config and config.excludeTags or {}
+
         local file = setmetatable({
             getTrace = getTrace
         }, {
@@ -350,6 +376,9 @@ end
 
 local function RunTests(self, config)
     local bLoadedTests
+    tags = config and config.tags or {}
+    excludeTags = config and config.excludeTags or {}
+
     for k,v in pairs(BustedTests[self]) do
         local testFile, getTrace = LuaTests.load(busted, v)
 
@@ -414,6 +443,9 @@ function LibBusted:OnLoad()
     }
 
     local outputHandler = outputPlainTerminal(outputHandlerOptions, busted) -- (only choice for now)
+
+    busted.subscribe({'register', 'it'}, checkTags, { priority = 1 })
+    busted.subscribe({'register', 'pending'}, checkTags, { priority = 1 })
 
     busted.subscribe({ 'test', 'start' }, outputHandler.testStart)
     busted.subscribe({ 'test', 'end' }, outputHandler.testEnd)
