@@ -1,4 +1,4 @@
-local MAJOR,MINOR = "Lib:Busted-2.0", 5
+local MAJOR,MINOR = "Lib:Busted-2.0", 6
 -- Get a reference to the package information if any
 local APkg = Apollo.GetPackage(MAJOR)
 -- If there was an older version loaded we need to see if this is newer
@@ -320,15 +320,15 @@ end
 --- Olivine-Labs Busted - v2
 -------------------------------------------------------------------------------
 local function ExecuteTests()
-    local register = busted.Register
-    busted.Register = function() end
+    local register = LibBusted.Register
+    LibBusted.Register = function() end
 
     busted.publish({ 'suite', 'start' })
     busted.execute()
     busted.publish({ 'suite', 'end' })
     busted.context.reset()
 
-    busted.Register = register
+    LibBusted.Register = register
 end
 
 local function RunTest(self, strTest)
